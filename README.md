@@ -16,5 +16,6 @@ IntelliJ IDEA &amp; Android Studio SQLite Browser Plugin
 
 # Credits
 
-1. Icons
 Icons made by [Freepik](http://www.freepik.com "Freepik") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
+
+Icons made by [Egor Rumyantsev](http://www.flaticon.com/authors/egor-rumyantsev "Egor Rumyantsev") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
