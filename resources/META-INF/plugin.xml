@@ -26,6 +26,11 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <toolWindow id="SQLite Browser"
+                anchor="bottom"
+                factoryClass="org.lazysource.plugins.studiosql.ui.DatabaseBrowserToolWindow"
+                icon="/icons/databaseBrowser.png"/>
+
   </extensions>
 
   <actions>
