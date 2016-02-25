@@ -47,18 +47,18 @@ function dump_db {
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
         # prepare a directory
-        mkdir -p `dirname dumps/$pkg/$filename` 2>/dev/null
+        mkdir -p `dirname ~/dumps/$pkg/$filename` 2>/dev/null
         # attempt to pull the file
-        adb pull /data/data/$pkg/$filename dumps/$pkg/$filename 2>/dev/null
+        adb pull /data/data/$pkg/$filename ~/dumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
             # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
             if [ $(uname) == 'Darwin' ]; then
-                adb shell run-as $pkg cat /data/data/$pkg/$filename > dumps/$pkg/$filename
+                adb shell run-as $pkg cat /data/data/$pkg/$filename > ~/dumps/$pkg/$filename
                 perl -pi -e 's/\r\n/\n/g' dumps/$pkg/$filename
             else
-                adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
+                adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > ~/dumps/$pkg/$filename
             fi
             if [ $? == 0 ]; then
                 success "Success!"
