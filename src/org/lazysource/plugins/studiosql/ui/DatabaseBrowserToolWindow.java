@@ -18,8 +18,14 @@ import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ishan on 14/02/16.
@@ -56,12 +62,12 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
     /**
      * Package name of the application for which the database has to be pulled.
      */
-    private JTextField packageName;
+    private JTextField packageNameTextField;
 
     /**
      * Name of the database that is being currently browsed.
      */
-    private JTextField databaseName;
+    private JTextField databaseNameTextField;
 
     /**
      * The ToolWindow instance.
@@ -73,6 +79,8 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      */
     private List<String> moduleNameList;
 
+    private Map<String, VirtualFile> gradleBuildFilesMap = new HashMap<>();
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
@@ -83,11 +91,12 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         tableTabbedPane.removeAll();
 
-        registerButtonListeners();
 
         this.moduleNameList = getAllModulesInTheProject(project);
 
         updateModuleComboBox();
+
+        registerActionListeners();
 
         toolWindow.getContentManager().addContent(content);
     }
@@ -95,10 +104,10 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
     /**
      * Registers the action listeners for all the components.
      */
-    private void registerButtonListeners() {
+    private void registerActionListeners() {
 
         buttonRefresh.addActionListener(this);
-
+        moduleComboBox.addActionListener(this);
     }
 
     @Override
@@ -116,6 +125,16 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                     tableNames) {
                 tableTabbedPane.add(tableName, new JPanel());
             }
+
+        }
+
+        if (e.getSource().equals(moduleComboBox)) {
+
+            String moduleName = (String) moduleComboBox.getSelectedItem();
+
+            String packageName = getPackageName(gradleBuildFilesMap.get(moduleName));
+
+            packageNameTextField.setText(packageName);
 
         }
 
@@ -140,12 +159,17 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
             Module module = index.getModuleForFile(vf);
             if (module != null) {
                 moduleNames.add(module.getName());
+                gradleBuildFilesMap.putIfAbsent(module.getName(), vf);
             }
         }
 
         return moduleNames;
     }
 
+    /**
+     * Adds the names of all the modules of the current project to the
+     * combo box for selection.
+     */
     private void updateModuleComboBox() {
 
         for (String moduleName : moduleNameList) {
@@ -153,5 +177,47 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         }
 
         moduleComboBox.setEditable(false);
+
+    }
+
+    /**
+     * This method reads the contents of the VirtualFile and attempts to find
+     * applicationId in the build.gradle file which is passed as a VirtualFile.
+     *
+     * Currently this method only returns the first package name encountered.
+     *
+     * @param virtualFile File in which the package name has to be looked for.
+     * @return package name of the application in the selected module
+     */
+    private String getPackageName(VirtualFile virtualFile) {
+
+        String packageName = "No Package Name Found";
+
+        try {
+
+            BufferedReader br
+                    = new BufferedReader(new FileReader(virtualFile.getPath()));
+            String currentLine;
+            StringBuilder stringBuilder = new StringBuilder();
+            while ((currentLine = br.readLine()) != null) {
+                stringBuilder.append(currentLine);
+                stringBuilder.append("\n");
+            }
+
+            String content = stringBuilder.toString();
+
+            String regex = "(applicationId)\\s(\"\\w+\\.\\w+\\.\\w+\")";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher m = pattern.matcher(content);
+            if (m.find()) {
+                packageName = m.group(2);
+                packageName = packageName.replaceAll("\"", "");
+            }
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return packageName;
     }
 }

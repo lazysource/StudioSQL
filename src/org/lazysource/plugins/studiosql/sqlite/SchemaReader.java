@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ishan on 27/02/16.
@@ -23,10 +25,40 @@ public class SchemaReader {
         System.out.println(msg);
     }
 
+    static String s = "apply plugin: 'com.android.application'\n" +
+            "\n" +
+            "android {\n" +
+            "    compileSdkVersion 23\n" +
+            "    buildToolsVersion \"23.0.2\"\n" +
+            "\n" +
+            "    defaultConfig {\n" +
+            "        applicationId \"in.ishankhanna.testapp\"\n" +
+            "        minSdkVersion 10\n" +
+            "        targetSdkVersion 23\n" +
+            "        versionCode 1\n" +
+            "        versionName \"1.0\"\n" +
+            "    }\n" +
+            "    buildTypes {\n" +
+            "        release {\n" +
+            "            minifyEnabled false\n" +
+            "            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+
     public static void main(String[] args) {
-        for (String tableName :
-                getTableNames()) {
-            print(tableName);
+
+        String regex = "(applicationId)\\s(\"\\w+\\.\\w+\\.\\w+\")";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher m = pattern.matcher(s);
+        if (m.find()) {
+
+            System.out.println("Found value: " + m.group(0) );
+            System.out.println("Found value: " + m.group(1) );
+            System.out.println("Found value: " + m.group(2) );
+
+        } else {
+            print ("no match");
         }
     }
 

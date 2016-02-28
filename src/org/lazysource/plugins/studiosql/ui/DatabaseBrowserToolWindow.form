@@ -28,11 +28,11 @@
             <constraints/>
             <properties/>
           </component>
-          <component id="19db6" class="javax.swing.JTextField" binding="packageName">
+          <component id="19db6" class="javax.swing.JTextField" binding="packageNameTextField">
             <constraints/>
             <properties/>
           </component>
-          <component id="4395c" class="javax.swing.JTextField" binding="databaseName">
+          <component id="4395c" class="javax.swing.JTextField" binding="databaseNameTextField">
             <constraints/>
             <properties/>
           </component>
