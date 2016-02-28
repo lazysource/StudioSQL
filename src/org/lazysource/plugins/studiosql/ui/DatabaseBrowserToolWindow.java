@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
 import javax.swing.*;
+import javax.swing.table.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -123,7 +124,10 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
             for (String tableName :
                     tableNames) {
-                tableTabbedPane.add(tableName, new JPanel());
+
+                JPanel jp = new JPanel();
+                jp.add(getTable(tableName));
+                tableTabbedPane.add(tableName, jp);
             }
 
         }
@@ -220,4 +224,17 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         return packageName;
     }
+
+    private JTable getTable(String tableName) {
+
+        List<String> columns = SchemaReader.getColumnNamesForTable(tableName);
+        String[][] values = new String[1][columns.size()];
+        for (int i=0; i<columns.size();i++) {
+            System.out.println(columns.get(i));
+            values[0][i] = columns.get(i);
+        }
+
+        return new JTable(values,columns.toArray());
+    }
+
 }
