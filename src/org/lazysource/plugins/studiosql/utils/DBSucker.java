@@ -1,6 +1,9 @@
 package org.lazysource.plugins.studiosql.utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 /**
@@ -30,7 +33,17 @@ public class DBSucker {
                 "-d", packageName, "databases/" + databaseName);
         try {
             Process p = pb.start();
+
+            InputStream is = p.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+            p.waitFor(); // Let the process finish.
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 

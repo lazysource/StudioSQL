@@ -6,11 +6,13 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
+import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 import org.lazysource.plugins.studiosql.utils.DBSucker;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 /**
  * Created by ishan on 14/02/16.
@@ -70,8 +72,16 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         if (e.getSource().equals(buttonRefresh)) {
 
-            DBSucker dbSucker = new DBSucker();
-            dbSucker.pullDB("", "");
+//            DBSucker dbSucker = new DBSucker();
+//            dbSucker.pullDB("", "");
+
+            SchemaReader schemaReader = new SchemaReader();
+            List<String> tableNames = SchemaReader.getTableNames();
+
+            for (String tableName :
+                    tableNames) {
+                tableTabbedPane.add(tableName, new JPanel());
+            }
 
         }
 

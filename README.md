@@ -8,6 +8,14 @@ IntelliJ IDEA &amp; Android Studio SQLite Browser Plugin
    * There are many ways in which it can be achieved, need to figure out the best possible way.
 3. Read SQLite DB and show it in the tool window. 
 
+## Constraints & Limitations
+
+* Currently the SQLite Database is being pulled using a Shell Script located in
+`resources/scripts` folder
+* The project requires `libs/sqlite-jdbc-3.8.11.2.jar` to be in global classpath of the system.
+
+
+
 
 # Contributors
 * Ishan Khanna [@ishan1604](https://twitter.com/ishan1604)
