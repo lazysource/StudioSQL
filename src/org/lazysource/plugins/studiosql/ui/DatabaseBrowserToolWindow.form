@@ -21,8 +21,20 @@
             <constraints/>
             <properties>
               <icon value="icons/setup.png"/>
-              <text value=""/>
+              <text value="Refresh"/>
             </properties>
+          </component>
+          <component id="ebfed" class="javax.swing.JComboBox" binding="moduleComboBox">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="19db6" class="javax.swing.JTextField" binding="packageName">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="4395c" class="javax.swing.JTextField" binding="databaseName">
+            <constraints/>
+            <properties/>
           </component>
         </children>
       </toolbar>
