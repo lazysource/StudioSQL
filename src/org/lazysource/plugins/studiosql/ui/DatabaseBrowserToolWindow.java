@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,7 @@ import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
 import javax.swing.*;
 import javax.swing.table.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -126,7 +128,9 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                     tableNames) {
 
                 JPanel jp = new JPanel();
-                jp.add(getTable(tableName));
+                jp.setLayout(new GridLayout(0,1));
+                JTable jTable = getTable(tableName);
+                jp.add(new JBScrollPane(jTable));
                 tableTabbedPane.add(tableName, jp);
             }
 
@@ -227,11 +231,17 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
     private JTable getTable(String tableName) {
 
-        List<String> columns = SchemaReader.getColumnNamesForTable(tableName);
-        String[][] values = new String[1][columns.size()];
-        for (int i=0; i<columns.size();i++) {
-            System.out.println(columns.get(i));
-            values[0][i] = columns.get(i);
+        ArrayList<String> columns = SchemaReader.getColumnNamesForTable(tableName);
+        ArrayList<ArrayList<String>> tableData = SchemaReader.getTableVector(tableName);
+
+        int columnCount = columns.size();
+        String[][] values = new String[tableData.size()][columnCount];
+
+        // table rows with data
+        for (int i=0; i<tableData.size();i++) {
+            for (int j=0;j<columnCount;j++) {
+                values[i][j] = tableData.get(i).get(j);
+            }
         }
 
         return new JTable(values,columns.toArray());
