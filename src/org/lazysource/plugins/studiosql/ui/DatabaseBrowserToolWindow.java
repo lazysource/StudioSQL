@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
 import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
