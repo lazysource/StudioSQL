@@ -1,6 +1,7 @@
 package org.lazysource.plugins.studiosql.sqlite;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.*;
 
@@ -30,14 +31,23 @@ public class SchemaReader {
 
     }
 
-    private static final String DB_FILE_PATH = "/Users/ishan/dumps/" + "co.snipclipper.snipclip/" + "databases/" + "DATABASE_NAME";
+    private String packageName;
+    private String databaseName;
+
+    private static String DB_FILE_PATH;
+
+    public SchemaReader(String packageName, String databaseName) {
+        this.packageName = packageName;
+        this.databaseName = databaseName;
+        DB_FILE_PATH = "/Users/ishan/dumps/" + packageName + "/databases/" + databaseName;
+    }
 
     public static void main(String[] args) {
     }
 
     // TODO : Write Method to establish connection to DB instead of using the DriverManager code over and over again.
 
-    public static List<String> getTableNames() {
+    public List<String> getTableNames() throws FileNotFoundException {
         println(DB_FILE_PATH);
         File dbFile = new File(DB_FILE_PATH);
         Connection connection = null;
@@ -67,12 +77,14 @@ public class SchemaReader {
                     e.printStackTrace();
                 }
             }
+        } else {
+            throw new FileNotFoundException();
         }
 
         return tableNames;
     }
 
-    public static ArrayList<String> getColumnNamesForTable(String tableName){
+    public ArrayList<String> getColumnNamesForTable(String tableName){
 
         File dbFile = new File(DB_FILE_PATH);
         Connection connection = null;
@@ -109,7 +121,7 @@ public class SchemaReader {
         return columnNames;
     }
 
-    public static ArrayList<ArrayList<String>> getTableVector(String tableName) {
+    public ArrayList<ArrayList<String>> getTableVector(String tableName) {
 
         File dbFile = new File(DB_FILE_PATH);
         Connection connection = null;

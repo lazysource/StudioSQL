@@ -17,13 +17,6 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="a9c42" class="javax.swing.JButton" binding="buttonRefresh">
-            <constraints/>
-            <properties>
-              <icon value="icons/setup.png"/>
-              <text value="Refresh"/>
-            </properties>
-          </component>
           <component id="ebfed" class="javax.swing.JComboBox" binding="moduleComboBox">
             <constraints/>
             <properties/>
@@ -34,7 +27,16 @@
           </component>
           <component id="4395c" class="javax.swing.JTextField" binding="databaseNameTextField">
             <constraints/>
-            <properties/>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+          <component id="a9c42" class="javax.swing.JButton" binding="buttonRefresh">
+            <constraints/>
+            <properties>
+              <icon value="icons/setup.png"/>
+              <text value="Refresh"/>
+            </properties>
           </component>
         </children>
       </toolbar>

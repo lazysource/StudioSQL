@@ -1,9 +1,12 @@
 package org.lazysource.plugins.studiosql.ui;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -13,6 +16,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.util.xml.ui.Warning;
 import org.jetbrains.annotations.NotNull;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
@@ -21,6 +25,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +39,8 @@ import java.util.regex.Pattern;
  */
 public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         ActionListener {
+
+    private static final String HINT_DB_TEXT_FIELD = "Enter SQLite Database Name";
 
     /**
      * Outer most JPanel that encloses the complete tool window.
@@ -81,20 +88,26 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      */
     private List<String> moduleNameList;
 
+    /**
+     * The current project instance.
+     */
+    private Project project;
+
     private Map<String, VirtualFile> gradleBuildFilesMap = new HashMap<>();
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
         this.mtoolWindow = toolWindow;
+        this.project = project;
 
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(mainPanel, "", false);
 
         tableTabbedPane.removeAll();
 
+        packageNameTextField.setEditable(false);
 
-        this.moduleNameList = getAllModulesInTheProject(project);
 
         updateModuleComboBox();
 
@@ -115,25 +128,6 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource().equals(buttonRefresh)) {
-
-//            DBSucker dbSucker = new DBSucker();
-//            dbSucker.pullDB("", "");
-
-            SchemaReader schemaReader = new SchemaReader();
-            List<String> tableNames = SchemaReader.getTableNames();
-
-            for (String tableName :
-                    tableNames) {
-
-                JPanel jp = new JPanel();
-                jp.setLayout(new GridLayout(0,1));
-                JTable jTable = getTable(tableName);
-                jp.add(new JBScrollPane(jTable));
-                tableTabbedPane.add(tableName, jp);
-            }
-
-        }
 
         if (e.getSource().equals(moduleComboBox)) {
 
@@ -143,8 +137,59 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
             packageNameTextField.setText(packageName);
 
+            databaseNameTextField.setText(HINT_DB_TEXT_FIELD);
+            databaseNameTextField.grabFocus();
+
         }
 
+
+        if (e.getSource().equals(buttonRefresh)) {
+
+            tableTabbedPane.removeAll();
+
+            String dataBaseName = databaseNameTextField.getText().trim();
+
+            if (!dataBaseName.isEmpty()
+                    && !dataBaseName.equals(HINT_DB_TEXT_FIELD)) {
+                // Preserve Database name and package name as key value pair here
+
+//            DBSucker dbSucker = new DBSucker();
+//            dbSucker.pullDB("", "");
+
+                SchemaReader schemaReader = new SchemaReader(packageNameTextField.getText(), databaseNameTextField.getText());
+                List<String> tableNames = null;
+                try {
+                    tableNames = schemaReader.getTableNames();
+                    for (String tableName :
+                            tableNames) {
+
+                        JPanel jp = new JPanel();
+                        jp.setLayout(new GridLayout(0,1));
+                        JTable jTable = getTable(schemaReader, tableName);
+                        jp.add(new JBScrollPane(jTable));
+                        tableTabbedPane.add(tableName, jp);
+                    }
+                } catch (FileNotFoundException e1) {
+
+                    notifyIdea("No database with name " + "<i>" + dataBaseName + "</i> exists." );
+
+                }
+
+
+            } else {
+                // Show a warning to the user that the Database Name is required!
+                notifyIdea("Database name cannot be null");
+
+            }
+
+
+        }
+
+    }
+
+    private void notifyIdea(String content) {
+        Notification notification = new Notification("g1", "SQLite Browser Error", content, NotificationType.ERROR);
+        notification.notify(project);
     }
 
     /**
@@ -178,6 +223,8 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      * combo box for selection.
      */
     private void updateModuleComboBox() {
+
+        moduleNameList = getAllModulesInTheProject(project);
 
         for (String moduleName : moduleNameList) {
             moduleComboBox.addItem(moduleName);
@@ -228,10 +275,10 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         return packageName;
     }
 
-    private JTable getTable(String tableName) {
+    private JTable getTable(SchemaReader schemaReader, String tableName) {
 
-        ArrayList<String> columns = SchemaReader.getColumnNamesForTable(tableName);
-        ArrayList<ArrayList<String>> tableData = SchemaReader.getTableVector(tableName);
+        ArrayList<String> columns = schemaReader.getColumnNamesForTable(tableName);
+        ArrayList<ArrayList<String>> tableData = schemaReader.getTableVector(tableName);
 
         int columnCount = columns.size();
         String[][] values = new String[tableData.size()][columnCount];
@@ -244,6 +291,22 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         }
 
         return new JTable(values,columns.toArray());
+    }
+
+    // TODO : Move this method to a place like Central Preference Utils.
+    /**
+     * Persists a key-value pair for Package Name and Database Name in the
+     * IntelliJ Preferences. This will allow us to retrieve it the next time
+     * user selects the Module name and won't have to type it again and again.
+     *
+     * @param packageName Package Name of the Application.
+     * @param databaseName Database Name that user wants to view.
+     * @return true if it was successfully persisted and false otherwise.
+     */
+    private boolean saveDatabaseNameAndPackageNamePairInCache(String packageName, String databaseName) {
+
+        return true;
+
     }
 
 }
