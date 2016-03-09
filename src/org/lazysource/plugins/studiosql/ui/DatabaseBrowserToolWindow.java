@@ -6,7 +6,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -16,7 +15,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.util.xml.ui.Warning;
 import org.jetbrains.annotations.NotNull;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
@@ -108,7 +106,6 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         packageNameTextField.setEditable(false);
 
-
         updateModuleComboBox();
 
         registerActionListeners();
@@ -170,21 +167,13 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                         tableTabbedPane.add(tableName, jp);
                     }
                 } catch (FileNotFoundException e1) {
-
                     notifyIdea("No database with name " + "<i>" + dataBaseName + "</i> exists." );
-
                 }
-
-
             } else {
                 // Show a warning to the user that the Database Name is required!
                 notifyIdea("Database name cannot be null");
-
             }
-
-
         }
-
     }
 
     private void notifyIdea(String content) {
