@@ -10,8 +10,12 @@ import java.util.*;
  */
 public class SchemaReader {
 
-    private static String COL_TYPE_TEXT = "TEXT";
-    private static String COL_TYPE_INTEGER = "INTEGER";
+    private static final String COL_TYPE_TEXT = "TEXT";
+    private static final String COL_TYPE_INTEGER = "INTEGER";
+
+    private static final String USER_HOME = System.getProperty("user.home");
+
+    private static final String DB_DUMP_DIR = "/dumps/";
 
     private static void println(String msg) {
         System.out.println(msg);
@@ -39,7 +43,7 @@ public class SchemaReader {
     public SchemaReader(String packageName, String databaseName) {
         this.packageName = packageName;
         this.databaseName = databaseName;
-        DB_FILE_PATH = "/Users/ishan/dumps/" + packageName + "/databases/" + databaseName;
+        DB_FILE_PATH = USER_HOME + DB_DUMP_DIR + packageName + "/databases/" + databaseName;
     }
 
     public static void main(String[] args) {
