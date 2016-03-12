@@ -16,16 +16,18 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +80,14 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
     private JTextField databaseNameTextField;
 
     /**
+     * The filter toolbar contains basic filter controls for ordering,
+     * grouping and pagination.
+     */
+    private JToolBar filterToolbar;
+    private JComboBox columnOrderingComboBox;
+    private JComboBox orderingTypeComboBox;
+
+    /**
      * The ToolWindow instance.
      */
     private ToolWindow mtoolWindow;
@@ -99,12 +109,13 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      */
     private Map<String, VirtualFile> gradleBuildFilesMap = new HashMap<>();
 
+    private SchemaReader schemaReader;
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
         this.mtoolWindow = toolWindow;
         this.project = project;
-
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(mainPanel, "", false);
 
@@ -159,9 +170,11 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 //            DBSucker dbSucker = new DBSucker();
 //            dbSucker.pullDB("", "");
 
-                SchemaReader schemaReader = new SchemaReader(packageNameTextField.getText(), databaseNameTextField.getText());
+                schemaReader = new SchemaReader(packageNameTextField.getText(), databaseNameTextField.getText());
                 List<String> tableNames = null;
                 try {
+                    // TODO : Write method to close connection when SQLite browser is closed/minimised.
+                    schemaReader.openConnection();
                     tableNames = schemaReader.getTableNames();
                     for (String tableName :
                             tableNames) {
@@ -174,6 +187,9 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                     }
                 } catch (FileNotFoundException e1) {
                     notifyIdea("No database with name " + "<i>" + dataBaseName + "</i> exists." );
+                } catch (SQLException eq) {
+                    notifyIdea("There was a problem connecting to the database.");
+                    eq.printStackTrace();
                 }
             } else {
                 // Show a warning to the user that the Database Name is required!
