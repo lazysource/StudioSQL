@@ -16,6 +16,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
 
 import javax.swing.*;
@@ -91,6 +92,11 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      */
     private Project project;
 
+    /**
+     * A map of all the build.gradle files found in the Project.
+     * Key is the name of the module in which this build.gradle file exists.
+     * Value is the instance of the build.gradle {@link VirtualFile}.
+     */
     private Map<String, VirtualFile> gradleBuildFilesMap = new HashMap<>();
 
     @Override
@@ -176,15 +182,28 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         }
     }
 
-    private void notifyIdea(String content) {
-        Notification notification = new Notification("g1", "SQLite Browser Error", content, NotificationType.ERROR);
+    /**
+     * Displays a notification in IDEA.
+     * @param title the title of the notification that you want to show.
+     * @param content the message that you want to show to the user.
+     */
+    private void notifyIdea(@NotNull String title, @NotNull String content) {
+        Notification notification = new Notification("g1", title, content, NotificationType.ERROR);
         notification.notify(project);
     }
 
     /**
-     *
-     * @param project
-     * @return
+     * Displays a notification in IDEA.
+     * @param content the message that you want to show to the user.
+     */
+    private void notifyIdea(@NotNull String content) {
+        notifyIdea("SQLite Browser", content);
+    }
+
+    /**
+     * This method returns all the modules available in the project.
+     * @param project An instance of the project.
+     * @return A list of module names.
      */
     private List<String> getAllModulesInTheProject(Project project){
 
