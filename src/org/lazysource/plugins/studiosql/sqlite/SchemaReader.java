@@ -51,6 +51,12 @@ public class SchemaReader {
 
     // TODO : Write Method to establish connection to DB instead of using the DriverManager code over and over again.
 
+    /**
+     * This method returns all the table names found in the database file.
+     * @return {@link List<String>} of table names.
+     * @throws FileNotFoundException - If the SQLite Database File is not
+     * found.
+     */
     public List<String> getTableNames() throws FileNotFoundException {
         println(DB_FILE_PATH);
         File dbFile = new File(DB_FILE_PATH);
@@ -88,6 +94,11 @@ public class SchemaReader {
         return tableNames;
     }
 
+    /**
+     * This method returns column names of the table.
+     * @param tableName - Table name in the database.
+     * @return An {@link ArrayList<String>} of column names.
+     */
     public ArrayList<String> getColumnNamesForTable(String tableName){
 
         File dbFile = new File(DB_FILE_PATH);
@@ -125,6 +136,11 @@ public class SchemaReader {
         return columnNames;
     }
 
+    /**
+     * Returns the table as an {@link ArrayList<ArrayList<String>>}.
+     * @param tableName Table name which is required as the Vector.
+     * @return {@link ArrayList<ArrayList<String>>}
+     */
     public ArrayList<ArrayList<String>> getTableVector(String tableName) {
 
         File dbFile = new File(DB_FILE_PATH);
