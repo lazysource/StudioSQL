@@ -12,14 +12,16 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.table.JBTable;
 import org.jetbrains.annotations.NotNull;
 import org.lazysource.plugins.studiosql.sqlite.SchemaReader;
+import org.lazysource.plugins.studiosql.sqlite.models.InteractiveTableModel;
+import org.lazysource.plugins.studiosql.ui.components.TablePanel;
 
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -78,14 +80,6 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
     private JTextField databaseNameTextField;
 
     /**
-     * The filter toolbar contains basic filter controls for ordering,
-     * grouping and pagination.
-     */
-    private JToolBar filterToolbar;
-    private JComboBox columnOrderingComboBox;
-    private JComboBox orderingTypeComboBox;
-
-    /**
      * The ToolWindow instance.
      */
     private ToolWindow mtoolWindow;
@@ -109,6 +103,12 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
     private SchemaReader schemaReader;
 
+    private Map<Integer, String> tabIndexTableNameMap = new HashMap<>();
+
+
+    InteractiveTableModel interactiveTableModel;
+
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
@@ -121,7 +121,7 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         packageNameTextField.setEditable(false);
 
-        updateModuleComboBox();
+        addModuleNamesToModuleComboBox();
 
         registerActionListeners();
 
@@ -135,6 +135,7 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
 
         buttonRefresh.addActionListener(this);
         moduleComboBox.addActionListener(this);
+
     }
 
     @Override
@@ -174,14 +175,16 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                     // TODO : Write method to close connection when SQLite browser is closed/minimised.
                     schemaReader.openConnection();
                     tableNames = schemaReader.getTableNames();
+                    int tabIndex = 0;
                     for (String tableName :
                             tableNames) {
 
-                        JPanel jp = new JPanel();
-                        jp.setLayout(new GridLayout(0,1));
                         JTable jTable = getTable(schemaReader, tableName);
-                        jp.add(new JBScrollPane(jTable));
-                        tableTabbedPane.add(tableName, jp);
+                        jTable.setAutoCreateRowSorter(true);
+                        TablePanel tablePanel = new TablePanel(jTable);
+                        tabIndexTableNameMap.putIfAbsent(tabIndex, tableName);
+                        tableTabbedPane.add(tableName, tablePanel);
+                        tabIndex += 1;
                     }
                 } catch (FileNotFoundException e1) {
                     notifyIdea("No database with name " + "<i>" + dataBaseName + "</i> exists." );
@@ -194,6 +197,8 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
                 notifyIdea("Database name cannot be null");
             }
         }
+
+
     }
 
     /**
@@ -244,7 +249,7 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
      * Adds the names of all the modules of the current project to the
      * combo box for selection.
      */
-    private void updateModuleComboBox() {
+    private void addModuleNamesToModuleComboBox() {
 
         moduleNameList = getAllModulesInTheProject(project);
 
@@ -297,22 +302,16 @@ public class DatabaseBrowserToolWindow implements ToolWindowFactory,
         return packageName;
     }
 
-    private JTable getTable(SchemaReader schemaReader, String tableName) {
+    private JBTable getTable(SchemaReader schemaReader, String tableName) {
 
         ArrayList<String> columns = schemaReader.getColumnNamesForTable(tableName);
         ArrayList<ArrayList<String>> tableData = schemaReader.getTableVector(tableName);
 
-        int columnCount = columns.size();
-        String[][] values = new String[tableData.size()][columnCount];
+        String[] columnsArr = new String[columns.size()];
+        columnsArr = columns.toArray(columnsArr);
+        interactiveTableModel = new InteractiveTableModel(columnsArr, tableData);
 
-        // table rows with data
-        for (int i=0; i<tableData.size();i++) {
-            for (int j=0;j<columnCount;j++) {
-                values[i][j] = tableData.get(i).get(j);
-            }
-        }
-
-        return new JTable(values,columns.toArray());
+        return new JBTable(interactiveTableModel);
     }
 
     // TODO : Move this method to a place like Central Preference Utils.

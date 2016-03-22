@@ -1,21 +1,17 @@
 package org.lazysource.plugins.studiosql.sqlite.models;
 
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
+import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 
 /**
  * Created by ishan on 03/03/16.
  */
-public class InteractiveTableModel implements TableModel {
+public class InteractiveTableModel extends AbstractTableModel{
 
     protected String[] columnNames;
 
     protected ArrayList<ArrayList<String>> tableData;
 
-    public InteractiveTableModel() {
-
-    }
 
     public InteractiveTableModel(String[] columnNames, ArrayList<ArrayList<String>> tableData) {
         this.columnNames = columnNames;
@@ -39,7 +35,7 @@ public class InteractiveTableModel implements TableModel {
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return null;
+        return String.class;
     }
 
     @Override
@@ -57,13 +53,4 @@ public class InteractiveTableModel implements TableModel {
 
     }
 
-    @Override
-    public void addTableModelListener(TableModelListener l) {
-
-    }
-
-    @Override
-    public void removeTableModelListener(TableModelListener l) {
-
-    }
 }

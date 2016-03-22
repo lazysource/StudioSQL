@@ -187,6 +187,50 @@ public class SchemaReader {
 
     }
 
+    public ArrayList<ArrayList<String>> getTableVector(String tableName, String orderBy) {
+
+        ArrayList<ArrayList<String>> tableData = new ArrayList<>();
+        try {
+            if (!isConnectedToDatabase()) {
+                throw new RuntimeException("Must Call SchemaReader#openConnection() first");
+            }
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement
+                    .executeQuery("SELECT * FROM `" + tableName + "` ORDER BY `" + orderBy + "` ASC LIMIT 0, 200;");
+            int columnCount = resultSet.getMetaData().getColumnCount();
+
+            Map<Integer, Object> columnTypeMap = new HashMap<>(columnCount);
+
+            for (int i=1;i<=columnCount;i++) {
+                columnTypeMap.putIfAbsent(i,resultSet.getMetaData().getColumnTypeName(i));
+            }
+
+            while (resultSet.next()) {
+
+                ArrayList<String> row = new ArrayList<>();
+                for (int i=1;i<=columnCount;i++) {
+
+                    if (columnTypeMap.get(i).equals(COL_TYPE_INTEGER)) {
+                        row.add(String.valueOf(resultSet.getInt(i)));
+                    } else if(columnTypeMap.get(i).equals(COL_TYPE_TEXT)) {
+                        row.add(resultSet.getString(i));
+                    } else {
+                        println("Couldn\'t figure out the column type");
+                    }
+                }
+                tableData.add(row);
+            }
+
+            println(tableData.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return tableData;
+
+    }
+
     protected boolean isConnectedToDatabase() {
         try {
             return connection != null && !connection.isClosed();
